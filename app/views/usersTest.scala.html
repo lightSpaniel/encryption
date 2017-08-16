@@ -1,0 +1,11 @@
+@(users: Seq[models.Schema])(implicit request: RequestHeader)
+@main("users"){
+    <h2>Users</h2>
+    <div>
+        <ul>
+        @for(user <- users){
+            <li>@user</li>
+        }
+        </ul>
+    </div>
+}
