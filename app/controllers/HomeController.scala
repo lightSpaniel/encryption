@@ -6,14 +6,13 @@ import play.api._
 import play.api.mvc._
 import models._
 import services.{Encrypt, Encryption}
-import play.api.db.slick.DatabaseConfigProvider
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
 import play.api.libs.json.Json
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 
 @Singleton
 class HomeController @Inject()(bidAccess: BidAccess,
