@@ -6,6 +6,9 @@
             <tr>
                 <th>Name</th>
             </tr>
+                @for(user <- users){
+                    <tr><td>@user.firstName @user.lastName</td></tr>
+                }
         </table>
     </div>
 }

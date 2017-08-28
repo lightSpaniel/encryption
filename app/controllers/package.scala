@@ -2,7 +2,7 @@ import javax.inject.{Inject, Singleton}
 import java.security.SecureRandom
 
 import com.google.inject.ImplementedBy
-import models.{Bid, User, Venture}
+import models.{Bid, User, Venture, BasicVenture}
 import org.abstractj.kalium.NaCl.Sodium.CRYPTO_SECRETBOX_XSALSA20POLY1305_KEYBYTES
 import play.api.libs.json.{JsPath, Json, Reads, Writes}
 import play.api.libs.functional.syntax._
@@ -19,6 +19,15 @@ package object controllers {
     }
 
   }
+
+  implicit val basicVentureWrites = new Writes[BasicVenture]{
+    def writes(basicVenture: BasicVenture) = Json.obj(
+      "name" -> basicVenture.name,
+      "description" -> basicVenture.description
+    )
+  }
+
+  implicit val basicVentureReads = Reads[BasicVenture] _
 
   implicit val userWrites = new Writes[User]{
     def writes(user: User) = Json.obj(

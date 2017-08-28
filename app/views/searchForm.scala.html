@@ -1,0 +1,24 @@
+@(title: String)
+@main(title){
+    <body>
+        <script src="@routes.Assets.versioned("javascripts/main.js")" type="text/javascript"></script>
+        <script src="@routes.AjaxController.javascriptRoutes" type="text/javascript" ></script>
+        <div class="input">
+            <input type="text" id="inputBox"><button id="selectVenture">Select</button>
+        </div>
+        <div class="screenshot">
+            <div class="navbar navbar-fixed-top">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <table data-list="@routes.AjaxController.updateSearch("***")">
+
+                        </table>
+                        <ul class="nav"></ul>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+            </div>
+        </div>
+    </body>
+}

@@ -3,6 +3,8 @@ import play.api.data.Forms._
 
 package object models {
 
+  case class BasicVenture(name: String, description: String)
+
   case class Schema(id: Long, projectClass: String, dataNonce: String, dataValue: String)
 
   sealed trait ProjectClass

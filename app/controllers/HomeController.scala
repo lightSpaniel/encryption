@@ -14,12 +14,16 @@ import play.api.libs.json.Json
 
 import scala.concurrent.Future
 
+import play.api.routing._
+
 @Singleton
 class HomeController @Inject()(bidAccess: BidAccess,
                                userAccess: UserAccess,
                                ventureAccess: VentureAccess,
                                encryption: Encryption,
                                startEncryption: StartEncryption) extends Controller {
+
+
 
   private val key = startEncryption.secretKey
 
@@ -39,6 +43,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
     }
   }
 
+
   def getAddUserForm = Action { implicit request =>
     Ok(views.html.inputUser(UserForm.form))
   }
@@ -57,25 +62,5 @@ class HomeController @Inject()(bidAccess: BidAccess,
     )
   }
 
-
-
-
-  def listAllUsers = Action.async{ implicit request =>
-    userAccess.listAll map { result =>
-      Ok(views.html.usersTest(result))
-    }
-  }
-
-  def listAllVentures = Action.async{ implicit request =>
-    ventureAccess.listAll map { result =>
-      Ok(views.html.venturesTest(result))
-    }
-  }
-
-  def listAllBids = Action.async{ implicit request =>
-    bidAccess.listAll map { result =>
-      Ok(views.html.bidsTest(result))
-    }
-  }
 
 }
