@@ -15,7 +15,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 
 
 class UserAccess @Inject()(protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext)
-extends HasDatabaseConfigProvider[JdbcProfile]{
+  extends HasDatabaseConfigProvider[JdbcProfile]{
 
   import slick.lifted.{Tag, TableQuery}
 

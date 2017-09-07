@@ -3,11 +3,13 @@
     <h2>Users</h2>
     <div>
         <table>
-            <tr>
-                <th>Name</th>
-            </tr>
-                @for(user <- users){
-                    <tr><td>@user.firstName @user.lastName</td></tr>
+
+        @for(user <- users){
+          <tr>
+              <td>
+                  <a href="@routes.HomeController.getUser(user.id)">@user.firstName @user.lastName</a>
+              </td>
+          </tr>
                 }
         </table>
     </div>

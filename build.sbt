@@ -23,8 +23,15 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick-evolutions" % "2.0.0"
 )
 
+libraryDependencies += "org.webjars" % "bootstrap" % "3.3.6"
+libraryDependencies += "org.webjars" % "requirejs" % "2.2.0"
+
 resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 routesGenerator := InjectedRoutesGenerator
+
+routesImport += "controllers.AjaxController"
+routesImport += "models.EnhancedUser"
+
 
 fork in run := false

@@ -1,0 +1,15 @@
+@(userForm: Form[models.EnhancedUserData])(implicit messages: Messages)
+<!--Takes a form a message (to allow use of form to pass message to controller)-->
+@main("Input new user"){
+
+    @helper.form(action = routes.HomeController.addEnhanced){
+        @helper.inputText(userForm("userName"), '_label -> "User name")
+        @helper.inputPassword(userForm("password"), '_label -> "password")
+        @helper.inputText(userForm("firstName"), '_label -> "First name", '_showConstraints -> false)
+        @helper.inputText(userForm("lastName"), '_label -> "Last name", '_showConstraints -> false)
+        @helper.inputText(userForm("emailAddress"), '_label -> "email address")
+
+        <input type="submit">
+    }
+
+}

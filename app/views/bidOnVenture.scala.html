@@ -1,0 +1,23 @@
+@(venture: Venture, sectorName: String, sessionKey: String, bidForm: Form[BidFormData])(implicit messages: Messages)
+@main(venture.name){
+<body>
+    <script src="@routes.Assets.versioned("javascripts/ajaxNominal.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.versioned("javascripts/ajaxPrice.js")" type="text/javascript"></script>
+    <script src="@routes.AjaxController.javascriptRoutes" type="text/javascript" ></script>
+    <div class="container">
+        <ul class="list-unstyled">
+            <li><h4>@venture.name</h4></li>
+            <li>@sectorName</li>
+            <li>Profit @venture.profit</li>
+            <li>Turnover @venture.profit</li>
+            <li class="nominal">
+                <table data-list="@routes.HomeController.getNominal(venture.id)"></table>
+            </li>
+            <li class="price">
+                <table data-list="@routes.HomeController.getPrice(venture.id)"></table>
+            </li>
+        </ul>
+
+    </div>
+</body>
+}

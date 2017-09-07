@@ -1,0 +1,11 @@
+@(sessionKey: String)
+@main("Welcome!"){
+
+    <div>
+        <a href="@routes.HomeController.singleUser(sessionKey)" class="btn">Update user details</a>
+    </div>
+    <div>
+        <a href="@routes.HomeController.listVentures(sessionKey)" class="btn">List Ventures</a>
+    </div>
+
+}

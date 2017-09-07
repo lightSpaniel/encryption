@@ -6,10 +6,45 @@
 GET     /                           controllers.HomeController.index
 
 GET     /users                      controllers.HomeController.listUsers
-
+GET     /enhancedUsers              controllers.HomeController.listEnhanced
 
 GET     /inputUser                  controllers.HomeController.getAddUserForm
 POST    /inputUser                  controllers.HomeController.addUser
 
+GET     /inputEnhancedUser          controllers.HomeController.serveAddEnhancedUserForm
+POST    /inputEnhancedUser          controllers.HomeController.addEnhanced
+
+GET     /updateItem                 controllers.HomeController.updateItem(id: Long, field: String)
+GET     /updateRecover              controllers.HomeController.justDelete(id: Long)
+
+GET     /deleteUser                 controllers.HomeController.deleteUser(id: Long)
+GET     /getUser                    controllers.HomeController.getUser(id: Long)
+
+GET     /login                      controllers.HomeController.loginForm
+POST    /login                      controllers.HomeController.login
+GET     /singleUser                 controllers.HomeController.singleUser(sessionKey: String)
+
+# Venture routes
+
+GET     /inputVenture               controllers.HomeController.serveNewVentureForm
+POST    /inputVenture               controllers.HomeController.addNewVenture
+GET     /listVentures               controllers.HomeController.listVentures(sessionKey: String)
+GET     /bidOnVenture               controllers.HomeController.bidOnVenture(ventureId: Long, sessionKey: String)
+
+GET     /javascriptRoutes           controllers.AjaxController.javascriptRoutes
+GET     /testjs                     controllers.HomeController.searchForm
+
+# Ajax calls
+GET     /getFilteredVentures        controllers.HomeController.updateSearch(string: String)
+GET     /getPrice                   controllers.HomeController.getPrice(id: Long)
+GET     /getNominal                 controllers.HomeController.getNominal(id: Long)
+
+GET     /testGetNominal             controllers.HomeController.testGetNominal
+
+
+
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
+GET     /javascripts/*file          controllers.Assets.at(path="/public/javascripts", file)

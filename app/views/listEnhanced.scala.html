@@ -1,0 +1,16 @@
+@(users: Seq[models.EnhancedUser])(implicit request: RequestHeader)
+@main("users"){
+    <h2>Users</h2>
+    <div>
+        <table>
+
+        @for(user <- users){
+            <tr>
+                <td>
+                    @user.firstName @user.lastName
+                </td>
+            </tr>
+        }
+        </table>
+    </div>
+}

@@ -1,0 +1,17 @@
+@(newVentureForm: Form[models.VentureData], sectors: Seq[(String, String)])(implicit messages: Messages)
+<!--Takes a form a message (to allow use of form to pass message to controller)-->
+@main("Input new venture"){
+
+    @helper.form(action = routes.HomeController.addNewVenture){
+        @helper.inputText(newVentureForm("name"), '_label -> "Name")
+        @helper.inputText(newVentureForm("profit"), '_label -> "Profit", '_showConstraints -> false)
+        @helper.inputText(newVentureForm("turnover"), '_label -> "Turnover", '_showConstraints -> false)
+        @helper.inputText(newVentureForm("price"), '_label -> "Price", '_showConstraints -> false)
+        @helper.inputText(newVentureForm("numberOfShares"), '_label -> "Number of shares", '_showConstraints -> false)
+        @helper.select(newVentureForm("sectorId"), sectors, '_label -> "Sector", '_default -> "--select a sector--",
+            '_showConstraints -> false)
+
+        <input type="submit">
+    }
+
+}

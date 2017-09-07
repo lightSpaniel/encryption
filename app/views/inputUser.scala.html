@@ -3,9 +3,9 @@
 @main("Input new user"){
 
     @helper.form(action = routes.HomeController.addUser){
-        @helper.inputText(userForm("firstName"))
-        @helper.inputText(userForm("lastName"))
-        @helper.inputText(userForm("emailAddress"))
+        @helper.inputText(userForm("firstName"), '_label -> "First name", '_showConstraints -> false)
+        @helper.inputText(userForm("lastName"), '_label -> "Last name", '_showConstraints -> false)
+        @helper.inputText(userForm("emailAddress"), '_label -> "email address", '_showConstraints -> false)
 
         <input type="submit">
     }
