@@ -1,0 +1,15 @@
+@(bidForm: Form[BidFormData], testString: String)(implicit messages: Messages)
+@main(testString){
+
+    <h3>@testString</h3>
+    <div>
+    @helper.form(action = routes.HomeController.testAkkaForm(testString)){
+        @helper.inputText(bidForm("amount"), '_label -> "Amount (units of money per 1 share)", '_showConstraints -> false)
+        @helper.inputText(bidForm("bidType"), '_label -> "Select bid type", '_showConstraints -> false)
+        @helper.inputText(bidForm("nominal"), '_label -> "Number of shares")
+
+        <input type="submit">
+    }
+    </div>
+
+}

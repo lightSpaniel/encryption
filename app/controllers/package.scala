@@ -52,7 +52,6 @@ package object controllers {
 
   implicit val readsPrice = Reads[Price] _
 
-
   implicit val sectorWrites = new Writes[Sector]{
     def writes(sec: Sector) = Json.obj(
       "id" -> sec.id,

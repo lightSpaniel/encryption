@@ -5,11 +5,6 @@ import play.api.db.slick.HasDatabaseConfigProvider
 import slick.driver.JdbcProfile
 import slick.driver.MySQLDriver.api._
 import javax.inject._
-
-import com.google.inject.ImplementedBy
-import controllers.HomeController
-import play.api.Play
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -47,6 +42,12 @@ class BidAccess @Inject()(protected val dbConfigProvider: DatabaseConfigProvider
 
   def listAll: Future[Seq[Schema]] = {
     dbConfig.db.run(bids.result)
+  }
+
+  def getWithDataNonce(dataNonce: String): Future[Option[Schema]] = {
+    dbConfig.db.run(bids.filter(_.dataNonce === dataNonce).result.headOption) map { result =>
+      result
+    }
   }
 
 }

@@ -19,7 +19,8 @@ create table `ventureSchema` (
   `name` TEXT NOT NULL,
   `projectClass` TEXT NOT NULL,
   `dataNonce` BLOB NOT NULL,
-  `dataValue` BLOB NOT NULL
+  `dataValue` BLOB NOT NULL,
+  `numberOfShares` BIGINT UNSIGNED NOT NULL
 );
 
 create table `enhancedUserSchema` (

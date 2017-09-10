@@ -3,10 +3,14 @@ import play.api.data.Forms._
 
 package object models {
 
+  case class TestCC(bidNominal: Long, ventureId: Long, testString: String, key: Array[Byte])
+
   case class Sector(id: Long, name: String)
+  case class Receipt(ventureId: Long, nominal: Long, price: Double)
   case class EncryptingUser(userName: String, passwordNonce: String, password: String)
   case class BasicVenture(name: String, description: String, price: Double)
-  case class EncryptingVenture(sectorId: Long, profit: Double, turnover: Double, price: Double, numberOfShares: Long)
+  case class EncryptingVenture(sectorId: Long, profit: Double, turnover: Double, price: Double)
+  case class BasicBid(amount: Double, bidType: String, nominal: Long)
   case class Price(name: String)
   case class Nominal(name: String)
   case class UserSession(id: Long,
@@ -19,7 +23,12 @@ package object models {
                          sessionKey: String)
 
   case class Schema(id: Long, projectClass: String, dataNonce: String, dataValue: String)
-  case class VentureSchema(id: Long, name: String, projectClass: String, dataNonce: String, dataValue: String)
+  case class VentureSchema(id: Long,
+                           name: String,
+                           projectClass: String,
+                           dataNonce: String,
+                           dataValue: String,
+                           numberOfShares: Long)
   case class EnhancedSchema(id: Long,
                             projectClass: String,
                             dataNonce: String,
@@ -58,14 +67,12 @@ package object models {
                      price: Double,
                      numberOfShares: Long) extends ProjectClass
   ////////////
-  case class BidFormData(currency: String, amount: BigDecimal, bidType: String, ventureId: String, nominal: Long)
+  case class BidFormData(amount: BigDecimal, bidType: String, nominal: Long)
   object BidForm {
     val form = Form(
       mapping(
-        "currency" -> nonEmptyText,
         "amount" -> bigDecimal,
         "bidType" -> nonEmptyText,
-        "ventureId" -> nonEmptyText,
         "nominal" -> longNumber
       )(BidFormData.apply)(BidFormData.unapply)
     )

@@ -11,8 +11,7 @@ package object services {
       "sectorId" -> encryptingVenture.sectorId,
       "profit" -> encryptingVenture.profit,
       "turnover" -> encryptingVenture.turnover,
-      "price" -> encryptingVenture.price,
-      "numberOfShares" -> encryptingVenture.numberOfShares
+      "price" -> encryptingVenture.price
     )
   }
 
@@ -20,8 +19,7 @@ package object services {
     (JsPath \ "sectorId").read[Long] and
       (JsPath \ "profit").read[Double] and
       (JsPath \ "turnover").read[Double] and
-      (JsPath \ "price").read[Double] and
-      (JsPath \ "numberOfShares").read[Long]
+      (JsPath \ "price").read[Double]
   )(EncryptingVenture.apply _)
 
 

@@ -20,7 +20,8 @@ class VentureAccess @Inject()(protected val dbConfigProvider: DatabaseConfigProv
     def projectClass = column[String]("PROJECTCLASS")
     def dataNonce = column[String]("DATANONCE")
     def dataValue = column[String]("DATAVALUE")
-    override def * = (id, name, projectClass, dataNonce, dataValue) <> (VentureSchema.tupled, VentureSchema.unapply)
+    def numberOfShares = column[Long]("NUMBEROFSHARES")
+    override def * = (id, name, projectClass, dataNonce, dataValue, numberOfShares) <> (VentureSchema.tupled, VentureSchema.unapply)
   }
 
   val ventures = TableQuery[Ventures]
@@ -43,6 +44,13 @@ class VentureAccess @Inject()(protected val dbConfigProvider: DatabaseConfigProv
 
   def listAll: Future[Seq[VentureSchema]] = {
     dbConfig.db.run(ventures.result)
+  }
+
+  def updateNumberOfShares(newNumber: Long, id: Long): Future[String] = {
+    dbConfig.db.run(ventures.filter(_.id === id).map(_.numberOfShares).update(newNumber)).map(result =>
+      "numberOfShares updated").recover{
+      case ex: Exception => ex.getCause.getMessage
+    }
   }
 
 }

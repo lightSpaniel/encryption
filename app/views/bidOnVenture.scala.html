@@ -16,8 +16,17 @@
             <li class="price">
                 <table data-list="@routes.HomeController.getPrice(venture.id)"></table>
             </li>
-        </ul>
+            <li>
+                Bid on this venture
+                    @helper.form(action = routes.HomeController.bidOnVentureAkka(venture.id, sessionKey)){
+                        @helper.inputText(bidForm("amount"), '_label -> "Amount (units of money per 1 share)", '_showConstraints -> false)
+                        @helper.inputText(bidForm("bidType"), '_label -> "Select bid type", '_showConstraints -> false)
+                        @helper.inputText(bidForm("nominal"), '_label -> "Number of shares")
 
+                        <input type="submit">
+                        }
+            </li>
+        </ul>
     </div>
 </body>
 }

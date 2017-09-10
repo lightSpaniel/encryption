@@ -29,7 +29,7 @@ GET     /singleUser                 controllers.HomeController.singleUser(sessio
 GET     /inputVenture               controllers.HomeController.serveNewVentureForm
 POST    /inputVenture               controllers.HomeController.addNewVenture
 GET     /listVentures               controllers.HomeController.listVentures(sessionKey: String)
-GET     /bidOnVenture               controllers.HomeController.bidOnVenture(ventureId: Long, sessionKey: String)
+
 
 GET     /javascriptRoutes           controllers.AjaxController.javascriptRoutes
 GET     /testjs                     controllers.HomeController.searchForm
@@ -39,11 +39,16 @@ GET     /getFilteredVentures        controllers.HomeController.updateSearch(stri
 GET     /getPrice                   controllers.HomeController.getPrice(id: Long)
 GET     /getNominal                 controllers.HomeController.getNominal(id: Long)
 
+# tests
 GET     /testGetNominal             controllers.HomeController.testGetNominal
+GET     /testAkka                   controllers.HomeController.testAkka
+POST    /testAkka                   controllers.HomeController.testAkkaForm(testString: String)
+GET     /testMoreAkka               controllers.HomeController.testMoreAkka(bidNominal: Long, ventureId: Long, testString: String)
 
-
-
-
+# Akka calls
+GET     /bidOnVenture               controllers.HomeController.bidOnVenture(ventureId: Long, sessionKey: String)
+POST    /bidOnVentureAkka           controllers.HomeController.bidOnVentureAkka(ventureId: Long, sessionKey: String)
+GET     /executeBid                 controllers.HomeController.executeBid(ventureId: Long, bidId: Long, sessionKey: String)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

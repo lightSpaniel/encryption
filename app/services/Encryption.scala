@@ -138,8 +138,7 @@ case class Encrypt() extends Encryption {
     val encryptingVenture = EncryptingVenture(venture.sectorId,
       venture.profit,
       venture.turnover,
-      venture.price,
-      venture.numberOfShares)
+      venture.price)
     val jsValue = Json.toJson(encryptingVenture)
     val nonce = Nonce.createNonce()
     val stringData = Json.stringify(jsValue)
@@ -149,7 +148,7 @@ case class Encrypt() extends Encryption {
     val nonceHex = encoder.encode(nonce.raw)
     val cipherHex = encoder.encode(cipher)
 
-    VentureSchema(0L, venture.name, "Venture", nonceHex, cipherHex)
+    VentureSchema(0L, venture.name, "Venture", nonceHex, cipherHex, venture.numberOfShares)
 
   }
 
@@ -177,6 +176,7 @@ case class Encrypt() extends Encryption {
     Some(Bid(schema.id, bid.currency, bid.amount, bid.bidType, bid.ventureId, bid.nominal))
   }
 
+  /**
   def decryptVenture (schema: Schema, key: Array[Byte]): Option[Venture] = {
     val json = decryptGeneral(schema, key)
     val venture = getVentureFromJson(json).get
@@ -188,6 +188,7 @@ case class Encrypt() extends Encryption {
       venture.price,
       venture.numberOfShares))
   }
+    **/
 
   def decryptVentureNew(ventureSchema: VentureSchema, key: Array[Byte]): Option[Venture] = {
     val nonceHex = ventureSchema.dataNonce
@@ -205,7 +206,7 @@ case class Encrypt() extends Encryption {
       partialVenture.profit,
       partialVenture.turnover,
       partialVenture.price,
-      partialVenture.numberOfShares))
+      ventureSchema.numberOfShares))
   }
 
 

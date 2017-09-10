@@ -1,6 +1,7 @@
 package controllers
 
 import javax.inject._
+
 import play.api.mvc._
 import models._
 import services.{Encrypt, Encryption}
@@ -14,6 +15,13 @@ import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 import java.nio.charset.StandardCharsets
 
+import akka.util.Timeout
+import akka.pattern.ask
+import actors.ConfiguredActor._
+import actors.ParentActor._
+import actors.ConfiguredChildActor._
+import actors.ParentActor
+import akka.actor.ActorRef
 
 @Singleton
 class HomeController @Inject()(bidAccess: BidAccess,
@@ -22,7 +30,10 @@ class HomeController @Inject()(bidAccess: BidAccess,
                                sectorAccess: SectorAccess,
                                enhancedUserAccess: EnhancedUserAccess,
                                encryption: Encryption,
-                               startEncryption: StartEncryption) extends Controller {
+                               startEncryption: StartEncryption,
+                               @Named("configured-actor") configuredActor: ActorRef,
+                              @Named("configured-child-actor") configuredChildActor: ActorRef,
+                              @Named("parent-actor") parentActor: ActorRef) extends Controller {
 
   private val key = startEncryption.universalPassword()
 
@@ -36,7 +47,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
   //pass list to view
   def listUsers = Action.async { implicit request =>
     userAccess.listAll map { result =>
-      val decryptedSeq = for(item <- result) yield
+      val decryptedSeq = for (item <- result) yield
         (Encrypt().decryptUser(item, key)).get
 
       Ok(views.html.listUser(decryptedSeq))
@@ -45,7 +56,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
 
   def listEnhanced = Action.async { implicit request =>
     enhancedUserAccess.listAll map { result =>
-      val decryptedSeq = for(item <- result) yield {
+      val decryptedSeq = for (item <- result) yield {
         userFromSchema(item)
       }
       Ok(views.html.listEnhanced(decryptedSeq))
@@ -79,7 +90,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
 
   def getSeqOfUsers: Seq[User] = {
     val futureResult = userAccess.listAll map { result =>
-      for(item <- result) yield
+      for (item <- result) yield
         (Encrypt().decryptUser(item, key)).get
     }
     Await.result(futureResult, 5.seconds)
@@ -99,11 +110,11 @@ class HomeController @Inject()(bidAccess: BidAccess,
 
     val candidatePasswordArray = Encrypt().decryptPassword(newEncryptingUser, key)
     val candidateFullPassword = new String(candidatePasswordArray, StandardCharsets.UTF_8)
-    val candidatePassword = candidateFullPassword.substring(0,inputPassword.length)
+    val candidatePassword = candidateFullPassword.substring(0, inputPassword.length)
 
-    val checkResult = if(inputPassword == candidatePassword) {
+    val checkResult = if (inputPassword == candidatePassword) {
       Encrypt().decryptEnhancedUser(candidateSchema, candidatePasswordArray)
-    }else{
+    } else {
       None
     }
     checkResult
@@ -137,7 +148,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
 
     Await.result(futureResult, 5.seconds) match {
       case "SessionKey updated" => {
-        val futureSchema  = enhancedUserAccess.get(enhancedSchema.id)
+        val futureSchema = enhancedUserAccess.get(enhancedSchema.id)
         val schema = Await.result(futureSchema, 5.seconds)
         schema
       }
@@ -148,7 +159,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
   def getUserWithUserNameAndPassWord(userName: String, password: String): Future[UserSession] = {
     val checkSchema: Option[EnhancedSchema] = getSchemaByUserName(userName)
     checkSchema match {
-      case None => Future(UserSession(0L, "", "", "", "", "", "", ""))
+      case None => Future(UserSession(0L, "", "", "", "", "", "", "fail"))
       case _ => {
         val candidateSchema = checkSchema.get
         val newEncryptingUser = EncryptingUser(candidateSchema.userName,
@@ -156,9 +167,9 @@ class HomeController @Inject()(bidAccess: BidAccess,
           candidateSchema.passwordEncrypted)
         val candidatePasswordArray = Encrypt().decryptPassword(newEncryptingUser, key)
         val candidateFullPassword = new String(candidatePasswordArray, StandardCharsets.UTF_8)
-        val candidatePassword = candidateFullPassword.substring(0,password.length)
+        val candidatePassword = candidateFullPassword.substring(0, password.length)
 
-        if(candidatePassword == password){
+        if (candidatePassword == password) {
           val newSchema = (updateSessionKey(candidateSchema)).get
           val user = (Encrypt().decryptEnhancedUser(newSchema, candidatePasswordArray)).get
           val usersession = UserSession(user.id,
@@ -170,8 +181,8 @@ class HomeController @Inject()(bidAccess: BidAccess,
             user.companyIds,
             newSchema.sessionKey)
           Future(usersession)
-        }else{
-          Future(UserSession(0L, "", "", "", "", "", "", ""))
+        } else {
+          Future(UserSession(0L, "", "", "", "", "", "", "fail"))
         }
       }
     }
@@ -190,15 +201,15 @@ class HomeController @Inject()(bidAccess: BidAccess,
 
   //add update user to accept session key
   def getUserWithSessionkey(sessionKey: String): Option[EnhancedUser] = {
-      val futureSchema = enhancedUserAccess.getWithSessionKey(sessionKey)
-      val schema = Await.result(futureSchema, 5.seconds)
-      schema match{
-        case None => None
-        case _ => {
-          val result = schema.get
-          Some(userFromSchema(result))
-        }
+    val futureSchema = enhancedUserAccess.getWithSessionKey(sessionKey)
+    val schema = Await.result(futureSchema, 5.seconds)
+    schema match {
+      case None => None
+      case _ => {
+        val result = schema.get
+        Some(userFromSchema(result))
       }
+    }
   }
 
 
@@ -216,8 +227,8 @@ class HomeController @Inject()(bidAccess: BidAccess,
       })
   }
 
-//////////
-/////////
+  //////////
+  /////////
   def serveAddEnhancedUserForm = Action { implicit request =>
     Ok(views.html.inputEnhancedUser(EnhancedUserForm.form))
   }
@@ -226,7 +237,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
     val salted = startEncryption.saltify(enhancedUser.password)
     val encryptingUser = Encrypt().encryptPassword(enhancedUser.userName, salted, key)
     val saltedPassword = startEncryption.convertPWStringToArrayBytes(salted)
-    Encrypt().encryptEnhancedUser(enhancedUser, saltedPassword,encryptingUser)
+    Encrypt().encryptEnhancedUser(enhancedUser, saltedPassword, encryptingUser)
   }
 
 
@@ -252,7 +263,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
   }
 
   //change redirect to login page ->
-  def deleteEnhanced(id: Long) = Action.async{ implicit request =>
+  def deleteEnhanced(id: Long) = Action.async { implicit request =>
     enhancedUserAccess.delete(id) map { result =>
       Ok(views.html.userNameAndPassword("User deleted", getIdForm.form))
     }
@@ -274,7 +285,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
   }
 
   def updateSpecific(field: String, update: String, enhancedUser: EnhancedUser): Option[EnhancedUser] = {
-    field match{
+    field match {
       case "userName" => Some(EnhancedUser(0L,
         update,
         enhancedUser.password,
@@ -296,21 +307,21 @@ class HomeController @Inject()(bidAccess: BidAccess,
         enhancedUser.lastName,
         enhancedUser.emailAddress,
         enhancedUser.companyIds))
-      case "lastName"=> Some(EnhancedUser(0L,
+      case "lastName" => Some(EnhancedUser(0L,
         enhancedUser.userName,
         enhancedUser.password,
         enhancedUser.firstName,
         update,
         enhancedUser.emailAddress,
         enhancedUser.companyIds))
-      case "emailAddress"=> Some(EnhancedUser(0L,
+      case "emailAddress" => Some(EnhancedUser(0L,
         enhancedUser.userName,
         enhancedUser.password,
         enhancedUser.firstName,
         enhancedUser.lastName,
         update,
         enhancedUser.companyIds))
-      case "companyIds"=> Some(EnhancedUser(0L,
+      case "companyIds" => Some(EnhancedUser(0L,
         enhancedUser.userName,
         enhancedUser.password,
         enhancedUser.firstName,
@@ -322,9 +333,9 @@ class HomeController @Inject()(bidAccess: BidAccess,
   }
 
   def justDelete(id: Long) = Action.async { implicit request =>
-    enhancedUserAccess.delete(id) map ( result =>
+    enhancedUserAccess.delete(id) map (result =>
       Redirect(routes.HomeController.searchForm)
-    )
+      )
   }
 
   def performUpdateEnhancedUser(enhancedUser: EnhancedUser, update: String) = Action.async { implicit request =>
@@ -341,8 +352,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
   }
 
 
-
- /////
+  /////
 
   def serveNewVentureForm = Action { implicit request =>
     Ok(views.html.inputVenture(VentureForm.form, getSectors))
@@ -360,32 +370,32 @@ class HomeController @Inject()(bidAccess: BidAccess,
     VentureForm.form.bindFromRequest.fold(
       errorForm => Future.successful(Ok(views.html.inputVenture(VentureForm.form, getSectors))),
       data => {
-          val newVenture = Venture(0L,
-            data.name,
-            data.sectorId.toLong,
-            data.profit.toDouble,
-            data.turnover.toDouble,
-            data.price.toDouble,
-            data.numberOfShares)
+        val newVenture = Venture(0L,
+          data.name,
+          data.sectorId.toLong,
+          data.profit.toDouble,
+          data.turnover.toDouble,
+          data.price.toDouble,
+          data.numberOfShares)
         val schema = Encrypt().encryptVenture(newVenture, key)
         ventureAccess.add(schema) map { result =>
           Ok(views.html.searchForm("Ventures"))
         }
-  }
+      }
     )
   }
 
-/**
-  val abc = BasicVenture("abc", "hello")
-  val xyz = BasicVenture("xyz", "world")
-  val efg = BasicVenture("efg", "hello")
-  val hij = BasicVenture("hij", "world")
-  val klm = BasicVenture("klm", "hello")
-  val nop = BasicVenture("nop", "world")
-
-  val testBasicVentures = Seq(abc, xyz, efg, hij, klm, nop)
-
-**/
+  /**
+    * val abc = BasicVenture("abc", "hello")
+    * val xyz = BasicVenture("xyz", "world")
+    * val efg = BasicVenture("efg", "hello")
+    * val hij = BasicVenture("hij", "world")
+    * val klm = BasicVenture("klm", "hello")
+    * val nop = BasicVenture("nop", "world")
+    **
+    *val testBasicVentures = Seq(abc, xyz, efg, hij, klm, nop)
+    *
+    **/
 
   def seqOfVentures: Seq[Venture] = {
     val futureResult = ventureAccess.listAll
@@ -420,35 +430,34 @@ class HomeController @Inject()(bidAccess: BidAccess,
   }
 
   /**
-
-    Has to be in Akka (Fifo)
-
-
-
-  def executeBid(sessionkey, ventureid) bid form {
-    bidform error, data
-    check sessionkey => if not go back login page
-    adjustedbid = updateVentureWithBid(bid)
-
-    bidaccess.add (change to return bid) map resultBid
-
-    ok(view (   ) )
-  }
-
-    def updateVentureWithBid( bid ): bid {
-        get future venture with venture id
-        get venture with await
-        check bidtype -> change venture nominal
-        if totalbid is greater than nominal limit to nominal
-
-  }
-
-
+    **
+    *Has to be in Akka (Fifo)
+    **
+    *
+    *
+    *def executeBid(sessionkey, ventureid) bid form {
+    * bidform error, data
+    * check sessionkey => if not go back login page
+    * adjustedbid = updateVentureWithBid(bid)
+    **
+ *bidaccess.add (change to return bid) map resultBid
+    **
+  *ok(view (   ) )
+    * }
+    **
+  *def updateVentureWithBid( bid ): bid {
+    * get future venture with venture id
+    * get venture with await
+    * check bidtype -> change venture nominal
+    * if totalbid is greater than nominal limit to nominal
+    **
+    * }
+    *
     **/
 
 
   def getVentureWithId(id: Long): Venture = {
-    val futureVentureSchemas= ventureAccess.get(id)
+    val futureVentureSchemas = ventureAccess.get(id)
     val ventureSchema = (Await.result(futureVentureSchemas, 5.seconds)).get
     (Encrypt().decryptVentureNew(ventureSchema, key)).get
   }
@@ -476,7 +485,7 @@ class HomeController @Inject()(bidAccess: BidAccess,
   def singleUser(sessionKey: String) = Action { implicit request =>
     val userOption = getUserWithSessionkey(sessionKey)
 
-    userOption match{
+    userOption match {
       case None => Ok(views.html.userNameAndPassword("Session expired", getIdForm.form))
       case _ =>
         val user = userOption.get
@@ -504,8 +513,17 @@ class HomeController @Inject()(bidAccess: BidAccess,
     }
   }
 
+  /////////
+  /////////
 
-/////////
+  implicit val timeout: Timeout = 5.seconds
+
+
+  def getConfig = Action.async {
+    (configuredActor ? actors.ConfiguredActor.GetConfig).mapTo[String].map { message =>
+      Ok(message)
+    }
+  }
 
   def bidOnVenture(ventureId: Long, sessionKey: String) = Action { implicit request =>
     checkIfSessionKeyIsValid(sessionKey) match {
@@ -517,7 +535,8 @@ class HomeController @Inject()(bidAccess: BidAccess,
 
         val futureSector = sectorAccess.get(venture.sectorId)
         val sector = (Await.result(futureSector, 5.seconds)).get
-
+        val bidTypes = ("buy" -> "BUY", "sell" -> "SELL")
+        //Ok(views.html.bidOnVenture(venture, sector.name, sessionKey, BidForm.form))
         Ok(views.html.bidOnVenture(venture, sector.name, sessionKey, BidForm.form))
       }
     }
@@ -526,12 +545,108 @@ class HomeController @Inject()(bidAccess: BidAccess,
   def checkIfSessionKeyIsValid(sessionKey: String): Boolean = {
     val futureResult = enhancedUserAccess.getWithSessionKey(sessionKey)
     val result = Await.result(futureResult, 5.seconds)
-
-    result match{
+    result match {
       case None => false
       case _ => true
     }
+  }
 
+  def saveBid(basicBid: BasicBid, ventureId: Long): Option[Long] = {
+    val newBid = Bid(0L, "GBP", basicBid.amount, basicBid.bidType, ventureId, basicBid.nominal)
+    val jsonBid = Json.toJson(newBid)
+    val encryptedBid = Encrypt().encrypt(jsonBid, key, "Bid")
+
+    val futureBidSchema = bidAccess.add(encryptedBid)
+    val bidSchemaResult = Await.result(futureBidSchema, 5.seconds)
+    val futureBid = bidAccess.getWithDataNonce(encryptedBid.dataNonce)
+    val bid = (Await.result(futureBid, 5.seconds)).get
+    val bidId = bid.id
+
+    bidSchemaResult match {
+      case "Bid added" => Some(bidId)
+      case _ => None
+    }
+  }
+
+  def bidOnVentureAkka(ventureId: Long, sessionKey: String) = Action { implicit request =>
+    BidForm.form.bindFromRequest.fold(
+      errorForm => BadRequest(views.html.welcome(sessionKey)),
+      data => {
+        val basicBid = BasicBid(data.amount.toDouble, data.bidType, data.nominal)
+        val bidId = saveBid(basicBid, ventureId)
+        bidId match {
+          case None => BadRequest(views.html.welcome(sessionKey))
+          case _ => Redirect(routes.HomeController.executeBid(ventureId, bidId.get, sessionKey))
+        }
+      }
+    )
+  }
+
+  def getBidWithId(bidId: Long): Option[Bid] = {
+    val futureBidSchema = bidAccess.get(bidId)
+    val bidSchema = (Await.result(futureBidSchema, 5.seconds)).get
+    Encrypt().decryptBid(bidSchema, key)
+  }
+
+  def executeBid(ventureId: Long, bidId: Long, sessionKey: String) = Action {
+    val bid = getBidWithId(bidId).get
+    checkIfSessionKeyIsValid(sessionKey) match {
+      case false => Ok(views.html.userNameAndPassword("Session key not recognised", getIdForm.form))
+      case true => {
+        val futureReceipt = (executeBidAkka(bid, ventureId))
+        val optionReceipt = Await.result(futureReceipt, 5.seconds)
+        optionReceipt match {
+          case None => Ok(views.html.userNameAndPassword("Bid not sucessful", getIdForm.form))
+          case _ => {
+            val receipt = optionReceipt.get
+            Ok(views.html.displayReceipt(receipt.ventureId, receipt.nominal, receipt.price, sessionKey))
+          }
+        }
+      }
+    }
+  }
+
+
+  def executeBidAkka(bid: Bid, ventureId: Long): Future[Option[Receipt]] = {
+    import akka.pattern.ask
+    (parentActor ? actors.ParentActor.ExecuteBid(bid.nominal, ventureId)).mapTo[String].map { message: String =>
+      message match {
+        case "numberOfShares updated" => Some(Receipt(ventureId, bid.nominal, bid.amount))
+        case _ => None
+      }
+    }
+  }
+
+
+  //////////////////
+  //////////////////
+
+  def testAkka = Action { implicit request =>
+    Ok(views.html.testAkka(BidForm.form, "jeremy"))
+  }
+
+  def testAkkaForm(testString: String) = Action.async { implicit request =>
+    BidForm.form.bindFromRequest.fold(
+      errorForm => Future.successful(Ok(views.html.testAkka(errorForm, "try again"))),
+      data => {
+        val newBid = Bid(0L,
+          "GBP",
+          data.amount.toDouble,
+          data.bidType,
+          1,
+          data.nominal)
+        val jsonUser = Json.toJson(newBid)
+        val encryptedUser = Encrypt().encrypt(jsonUser, key, "User")
+
+        bidAccess.add(encryptedUser).map(result =>
+          Redirect(routes.HomeController.listUsers)
+        )
+      }
+    )
+  }
+
+  def testMoreAkka(bidNominal: Long, ventureId: Long, testString: String) = {
+    configuredChildActor ! TestCC(bidNominal, ventureId, testString, key)
   }
 
 
