@@ -1,10 +1,12 @@
-@(ventureId: Long, nominal: Long, price: Double, sessionKey: String)
+@(nominal: Long, price: Double, userName: String)
 @main("Receipt"){
     <div>
-        <h3>Sucessful purchase</h3>
+        <h3>Successful purchase</h3>
+        <h3>Purchase registered to user @userName</h3>
         <ul>
             <li>Number bought: @nominal</li>
             <li>Price: @price</li>
         </ul>
+
     </div>
 }

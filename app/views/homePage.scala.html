@@ -1,0 +1,12 @@
+@(welcome: String)
+@main(welcome){
+    <h2>@welcome</h2>
+    <div>
+        <ul class="list-unstyled">
+            <li><a href="@routes.VentureController.addVenture">Add new venture</a></li>
+            <li><a href="@routes.UserController.serveAddUserForm("Register")">Register to bid</a></li>
+            <li><a href="@routes.UserController.loginForm">Login</a></li>
+        </ul>
+    </div>
+
+}

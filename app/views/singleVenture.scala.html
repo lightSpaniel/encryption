@@ -1,0 +1,23 @@
+@(venture: Venture)
+@main(venture.name) {
+    <body>
+        <script src="@routes.Assets.versioned("javascripts/ajaxNominal.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/ajaxPrice.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.versioned("javascripts/ajaxSector.js")" type="text/javascript"></script>
+        <ul class="list-unstyled">
+            <h3>@venture.name</h3>
+            <li>Profit @venture.profit</li>
+            <li>Turnover @venture.turnover</li>
+            <li class="nominal">
+                <table data-list="@routes.HomeController.getNominal(venture.id)"></table>
+            </li>
+            <li class="price">
+                <table data-list="@routes.HomeController.getPrice(venture.id)"></table>
+            </li>
+            <li class="sector">
+                <table data-list="@routes.HomeController.getSectorName(venture.sectorId)"></table>
+            </li>
+
+        </ul>
+    </body>
+}

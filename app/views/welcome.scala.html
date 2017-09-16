@@ -1,11 +1,29 @@
-@(sessionKey: String)
-@main("Welcome!"){
-
-    <div>
-        <a href="@routes.HomeController.singleUser(sessionKey)" class="btn">Update user details</a>
-    </div>
-    <div>
-        <a href="@routes.HomeController.listVentures(sessionKey)" class="btn">List Ventures</a>
-    </div>
-
-}
+@(ventures: Seq[Venture], sessionKey: String, bidForm: Form[BidFormData])(implicit messages: Messages)
+    @main("Choose a venture to bid on"){
+        <body>
+            <div>
+                <a href="@routes.UserController.singleUser(sessionKey)" class="btn">Check user details and delete</a>
+            </div>
+            <h4>Bid of a venture</h4>
+            <div class="container">
+                <ul>
+                @for(venture <- ventures){
+                    <ul class="list-unstyled">
+                        <h3>@venture.name</h3>
+                        <li>Profit @venture.profit</li>
+                        <li>Turnover @venture.turnover</li>
+                        <li>Nominal @venture.numberOfShares</li>
+                        <li>Price @venture.price</li>
+                        <li><a href ="@routes.VentureController.singleVenture(venture.id)">Track venture</a></li>
+                        <li>
+                            @helper.form(action = routes.BidController.startBid(venture.id, venture.price, venture.sectorId, sessionKey)){
+                                @helper.inputText(bidForm("nominal"), '_label -> "Number of shares")
+                                <input type="submit">
+                                }
+                        </li>
+                    </ul>
+                }
+                </ul>
+            </div>
+        </body>
+    }

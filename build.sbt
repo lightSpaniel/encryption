@@ -30,8 +30,6 @@ resolvers += "scalaz-bintray" at "http://dl.bintray.com/scalaz/releases"
 
 routesGenerator := InjectedRoutesGenerator
 
-routesImport += "controllers.AjaxController"
-routesImport += "models.EnhancedUser"
-
+routesImport += "controllers.UserController"
 
 fork in run := false

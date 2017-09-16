@@ -1,4 +1,5 @@
 @(message: String)
-@main("Login failed"){
+@main(message){
     <h3>@message</h3>
+    <a href="@routes.HomeController.index()">Try again</a>
 }

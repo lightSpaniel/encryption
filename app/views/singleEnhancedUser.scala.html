@@ -3,42 +3,18 @@
     <div>
         <h3>@if(userSession.id > 0){Select item to update}</h3>
         <table class="table">
-            <tr>
-                <td>
-                    <a href="@routes.HomeController.updateItem(userSession.id, "userName")" class="btn">
-                    @userSession.userName
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="@routes.HomeController.updateItem(userSession.id, "password")" class="btn">
-                    @userSession.password
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="@routes.HomeController.updateItem(userSession.id, "lastName")" class="btn">
-                    @userSession.firstName @userSession.lastName
-                    </a>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a href="@routes.HomeController.updateItem(userSession.id, "emailAddress")" class="btn">
-                    @userSession.emailAddress
-                    </a>
-                </td>
-            </tr>
+            <tr><td>@userSession.userName</td></tr>
+            <tr><td>@userSession.password</td></tr>
+            <tr><td> @userSession.firstName @userSession.lastName</td></tr>
+            <tr><td>@userSession.emailAddress</td></tr>
         </table>
         <div class="actions">
-            <a href="@routes.HomeController.deleteUser(userSession.id)" class="btn">
+            <a href="@routes.UserController.deleteUser(userSession.id)" class="btn">
                 @if(userSession.id > 0){
                     Delete user
                 }
             </a>
-            <a href="@routes.HomeController.deleteUser(userSession.id)" class="btn">
+            <a href="@routes.HomeController.index()" class="btn">
             @if(userSession.id == 0){
                 Login failed
             }

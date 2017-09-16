@@ -3,23 +3,19 @@ import play.api.data.Forms._
 
 package object models {
 
-  case class TestCC(bidNominal: Long, ventureId: Long, testString: String, key: Array[Byte])
-
+  case class resultOfUpdate(success: String, numberOfShares: Long)
   case class Sector(id: Long, name: String)
   case class Receipt(ventureId: Long, nominal: Long, price: Double)
   case class EncryptingUser(userName: String, passwordNonce: String, password: String)
-  case class BasicVenture(name: String, description: String, price: Double)
-  case class EncryptingVenture(sectorId: Long, profit: Double, turnover: Double, price: Double)
-  case class BasicBid(amount: Double, bidType: String, nominal: Long)
   case class Price(name: String)
   case class Nominal(name: String)
+  case class SectorName(name: String)
   case class UserSession(id: Long,
                          userName: String,
                          password: String,
                          firstName: String,
                          lastName: String,
                          emailAddress: String,
-                         companyIds: String,
                          sessionKey: String)
 
   case class Schema(id: Long, projectClass: String, dataNonce: String, dataValue: String)
@@ -45,19 +41,14 @@ package object models {
                  amount: Double,
                  bidType: String,
                  ventureId: Long,
-                 nominal: Long) extends ProjectClass
-  case class User(id: Long,
-                  firstName: String,
-                  lastName: String,
-                  emailAddress: String,
-                  companyIds: String) extends ProjectClass
+                 userId: Long,
+                 nominal: Double) extends ProjectClass
   case class EnhancedUser(id: Long,
                           userName: String,
                           password: String,
                           firstName: String,
                           lastName: String,
-                          emailAddress: String,
-                          companyIds: String
+                          emailAddress: String
                          )extends ProjectClass
   case class Venture(id: Long,
                      name: String,
@@ -66,27 +57,24 @@ package object models {
                      turnover: Double,
                      price: Double,
                      numberOfShares: Long) extends ProjectClass
+  case class SessionVenture(id: Long,
+                            name: String,
+                            sectorId: Long,
+                            profit: Double,
+                            turnover: Double,
+                            price: Double,
+                            numberOfShares: Long,
+                            sessionKey: String)
   ////////////
-  case class BidFormData(amount: BigDecimal, bidType: String, nominal: Long)
+  case class BidFormData(nominal: Long)
   object BidForm {
     val form = Form(
       mapping(
-        "amount" -> bigDecimal,
-        "bidType" -> nonEmptyText,
         "nominal" -> longNumber
       )(BidFormData.apply)(BidFormData.unapply)
     )
   }
-  case class UserFormData(firstName: String, lastName: String, emailAddress: String)
-  object UserForm {
-    val form = Form(
-      mapping(
-        "firstName" -> nonEmptyText(minLength = 1, maxLength = 50),
-        "lastName" -> nonEmptyText(minLength = 1, maxLength = 50),
-        "emailAddress" -> email
-      )(UserFormData.apply)(UserFormData.unapply)
-    )
-  }
+
   case class getUserNameAndPasswordData(userName: String, password: String)
   object getIdForm{
     val form = Form(
